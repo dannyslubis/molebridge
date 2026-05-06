@@ -7,23 +7,35 @@
     <!-- Import Font VT323 -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        /* Reset & Base Settings */
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        /* Menggunakan Aturan Scaling Cross-Platform Referensi Anda */
         body {
-            background-color: #1a1a1a;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; font-family: 'VT323', monospace;
+            display: flex;
+            justify-content: center; 
+            align-items: center;     
+            height: 100vh;
+            height: 100svh; /* Aman untuk mobile */
+            width: 100vw;
+            background-color: #1a1a1a; 
+            margin: 0;
+            padding: 0;
+            font-family: 'VT323', monospace;
+            color: white;
+            touch-action: none;
+            overflow: hidden;        
         }
 
-        /* Container 16:9 - Skala Otomatis berdasarkan Lebar Layar */
+        /* Container Dinamis 16:9 */
         #game-container {
             position: relative;
             width: 100%;
-            max-width: 800px; /* Optimal view */
+            height: 100%;
+            max-width: calc(100vh * (16 / 9));
+            max-width: calc(100svh * (16 / 9));
+            max-height: calc(100vw * (9 / 16));
             aspect-ratio: 16 / 9;
             background-color: #000;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            /* Container type untuk bantu scaling font */
+            container-type: inline-size;
         }
 
         /* Sistem Layering Dasar */
@@ -37,17 +49,17 @@
         #layer-canvas { background-image: url('kanvasmb.png'); z-index: 1; }
         #layer-bottle { background-image: url('mbnacl.png'); z-index: 2; transition: background-image 0.1s; }
         
-        /* Animasi Tumpukan Zat (h7-i8) -> z-index 3 (Di bawah Key) */
+        /* Animasi Tumpukan Zat (Tepat di h7-i8) -> z-index 3 */
         #layer-salt {
             position: absolute;
-            left: 43.75%; width: 12.5%;
-            bottom: 22.22%; height: 0%; /* Titik tumpu di bawah */
-            display: flex; justify-content: center; align-items: flex-end;
+            left: 43.75%; top: 66.66%; /* Mulai dari h7 */
+            width: 12.5%; height: 22.22%; /* Mencakup lebar h-i dan tinggi 7-8 */
+            display: flex; justify-content: center; align-items: center; /* Tumbuh dari tengah */
             z-index: 3;
         }
         .salt-pile {
-            background-color: #ffffff; /* Default NaCl */
-            border-radius: 50%;
+            background-color: #ffffff;
+            border-radius: 50%; /* Membentuk oval/lingkaran */
             width: 0%; height: 0%;
             transition: all 0.3s ease;
         }
@@ -60,15 +72,13 @@
             position: absolute;
             left: 43.75%; top: 88.88%;
             width: 12.5%; height: 11.11%;
-            display: flex; justify-content: center; align-items: center;
-            color: #5b7ea4; font-size: 4vw; z-index: 5;
+            display: flex; justify-content: center; align-items: center; text-align: center;
+            color: #5b7ea4; font-size: 3.5cqw; z-index: 5;
         }
 
         /* Area Tombol Interaktif Transparan (Grid System) -> z-index 10 */
         .btn-grid {
-            position: absolute;
-            background: transparent; border: none; 
-            cursor: pointer; z-index: 10;
+            position: absolute; background: transparent; border: none; cursor: pointer; z-index: 10;
         }
 
         /* Lapisan Pop-Up -> z-index 20 */
@@ -79,17 +89,13 @@
         /* Teks dalam Pop-Up Perhitungan (Koordinat h4-k4, dll) */
         .calc-text {
             position: absolute; height: 11.11%; width: 25%;
-            display: flex; align-items: center; justify-content: flex-start;
-            color: #000; font-size: 3.5vw;
+            display: flex; align-items: center; justify-content: center; text-align: center; /* Rata Tengah Sejati */
+            color: #000; font-size: 3cqw;
         }
         #calc-mass { left: 43.75%; top: 33.33%; } 
         #calc-mr { left: 43.75%; top: 44.44%; }   
         #calc-result { left: 43.75%; top: 55.55%; } 
 
-        @media (min-width: 800px) {
-            #scale-display { font-size: 32px; }
-            .calc-text { font-size: 28px; }
-        }
     </style>
 </head>
 <body>
@@ -108,7 +114,7 @@
     <div id="layer-key" class="layer"></div>
 
     <!-- Teks Timbangan -->
-    <div id="scale-display">0.0</div>
+    <div id="scale-display">0,0</div>
 
     <!-- TOMBOL INTERAKTIF (MAIN SCREEN) -->
     <!-- Buka Rak Bahan (b3,c3,d3) -->
@@ -139,7 +145,7 @@
         <button class="btn-grid" style="left: 62.5%; top: 11.11%; width: 12.5%; height: 33.33%; z-index: 21;" onclick="pilihZat('c')"></button>
         <button class="btn-grid" style="left: 81.25%; top: 11.11%; width: 12.5%; height: 33.33%; z-index: 21;" onclick="pilihZat('fe')"></button>
         
-        <!-- Tombol Kembali/Tutup Rak (p1) -> w: 6.25%, x: 93.75% -->
+        <!-- Tombol Tutup Rak (p1) -->
         <button class="btn-grid" style="left: 93.75%; top: 0%; width: 6.25%; height: 11.11%; z-index: 21;" onclick="tutupRak()"></button>
     </div>
 
@@ -149,24 +155,24 @@
         <button class="btn-grid" style="left: 87.5%; top: 22.22%; width: 6.25%; height: 11.11%; z-index: 21;" onclick="tutupHitung()"></button>
         
         <!-- Teks Display Kalkulator -->
-        <div id="calc-mass" class="calc-text">0.0 g</div>
+        <div id="calc-mass" class="calc-text">0,0 g</div>
         <div id="calc-mr" class="calc-text">58 g/mol</div>
-        <div id="calc-result" class="calc-text">0.0 mol</div>
+        <div id="calc-result" class="calc-text">0,0 mol</div>
     </div>
 </div>
 
 <script>
     // --- DATABASE BAHAN KIMIA ---
     const databaseZat = {
-        's':    { symbol: 's',    mr: 32, color: '#f1c40f' }, // Kuning
-        'nacl': { symbol: 'nacl', mr: 58, color: '#ffffff' }, // Putih
-        'naoh': { symbol: 'naoh', mr: 40, color: '#ffffff' }, // Putih
-        'c':    { symbol: 'c',    mr: 12, color: '#2c3e50' }, // Hitam/Abu Gelap
-        'fe':   { symbol: 'fe',   mr: 56, color: '#95a5a6' }  // Abu-abu
+        's':    { symbol: 's',    mr: 32, color: '#f1c40f' }, 
+        'nacl': { symbol: 'nacl', mr: 58, color: '#ffffff' }, 
+        'naoh': { symbol: 'naoh', mr: 40, color: '#ffffff' }, 
+        'c':    { symbol: 'c',    mr: 12, color: '#2c3e50' }, 
+        'fe':   { symbol: 'fe',   mr: 56, color: '#95a5a6' }  
     };
 
     // --- STATE SIMULASI ---
-    let zatAktif = databaseZat['nacl']; // Default awal
+    let zatAktif = databaseZat['nacl'];
     let maxKapasitas = 100;
     let massaTimbangan = 0;
     let timerWadah = null;
@@ -178,34 +184,41 @@
     const popupShelf = document.getElementById('popup-shelf');
     const popupCalc = document.getElementById('popup-calc');
 
-    // --- CORE LOGIC ---
-    function formatDesimal(angka) {
-        return angka.toFixed(1);
+    // --- FUNGSI FORMAT ANGKA ---
+    function formatMassa(angka) {
+        // Tepat 1 desimal. Mengganti titik dengan koma. 0 -> "0,0". 5.5 -> "5,5"
+        return angka.toFixed(1).replace('.', ',');
     }
 
+    function formatMol(angka) {
+        // Maksimal 3 desimal. Dikalikan 1000, dibulatkan, lalu dibagi 1000 untuk menghilangkan trailing nol.
+        let rounded = Math.round(angka * 1000) / 1000;
+        return String(rounded).replace('.', ',');
+    }
+
+    // --- CORE LOGIC ---
     function bukaWadahSementara() {
-        elWadah.style.backgroundImage = `url('mb${zatAktif.symbol}1.png')`; // Wadah Terbuka
+        elWadah.style.backgroundImage = `url('mb${zatAktif.symbol}1.png')`;
         if (timerWadah) clearTimeout(timerWadah);
         timerWadah = setTimeout(() => {
-            elWadah.style.backgroundImage = `url('mb${zatAktif.symbol}.png')`; // Tutup Wadah
+            elWadah.style.backgroundImage = `url('mb${zatAktif.symbol}.png')`;
         }, 3000);
     }
 
     function updateVisual() {
-        elTimbangan.innerText = formatDesimal(massaTimbangan);
+        elTimbangan.innerText = formatMassa(massaTimbangan);
         
-        // Logika Oval Animasi
+        // Logika Visual Oval (Membesar dari tengah karena flex justify-center & align-center di CSS)
         let persentase = (massaTimbangan / maxKapasitas) * 100;
         elGaram.style.width = persentase + '%';
-        elGaram.style.height = (persentase / 2) + '%';
+        elGaram.style.height = (persentase * 0.5) + '%'; /* x0.5 untuk memastikan bentuknya oval */
     }
 
     // --- ACTIONS ---
     function pilihZat(simbol) {
         zatAktif = databaseZat[simbol];
-        resetTimbangan(); // Setel ulang timbangan setiap ganti zat
+        resetTimbangan(); 
         
-        // Ganti Layer Botol dan Warna Garam
         elWadah.style.backgroundImage = `url('mb${zatAktif.symbol}.png')`;
         elGaram.style.backgroundColor = zatAktif.color;
         
@@ -227,10 +240,8 @@
 
     function autoMol(targetMol) {
         let targetMassa = targetMol * zatAktif.mr;
-        if (targetMassa > maxKapasitas) {
-            console.log("Di luar kapasitas timbangan!");
-            return;
-        }
+        if (targetMassa > maxKapasitas) return; // Jika > 100 gram, abaikan.
+        
         massaTimbangan = targetMassa;
         bukaWadahSementara();
         updateVisual();
@@ -238,11 +249,11 @@
 
     // --- POPUP CONTROLS ---
     function bukaHitung() {
-        document.getElementById('calc-mass').innerText = formatDesimal(massaTimbangan) + ' g';
+        document.getElementById('calc-mass').innerText = formatMassa(massaTimbangan) + ' g';
         document.getElementById('calc-mr').innerText = zatAktif.mr + ' g/mol';
         
         let hasilMol = massaTimbangan / zatAktif.mr;
-        document.getElementById('calc-result').innerText = formatDesimal(hasilMol) + ' mol';
+        document.getElementById('calc-result').innerText = formatMol(hasilMol) + ' mol';
         
         popupCalc.style.display = 'block';
     }
