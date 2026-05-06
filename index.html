@@ -7,13 +7,13 @@
     <!-- Import Font VT323 -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        /* Menggunakan Aturan Scaling Cross-Platform Referensi Anda */
+        /* Menggunakan Aturan Scaling Cross-Platform */
         body {
             display: flex;
             justify-content: center; 
             align-items: center;     
             height: 100vh;
-            height: 100svh; /* Aman untuk mobile */
+            height: 100svh;
             width: 100vw;
             background-color: #1a1a1a; 
             margin: 0;
@@ -34,40 +34,47 @@
             max-height: calc(100vw * (9 / 16));
             aspect-ratio: 16 / 9;
             background-color: #000;
-            /* Container type untuk bantu scaling font */
+            /* Magic Code: Mencegah blur pada saat scaling keseluruhan */
+            image-rendering: pixelated; 
+            image-rendering: crisp-edges;
             container-type: inline-size;
         }
 
-        /* Sistem Layering Dasar */
+        /* Sistem Layering Dasar yang Tajam */
         .layer {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            background-size: cover; background-position: center; background-repeat: no-repeat;
+            background-size: 100% 100%; /* Diubah agar presisi dengan aspek rasio */
+            background-position: center; 
+            background-repeat: no-repeat;
+            /* Magic Code: Mencegah blur pada gambar yang diload */
+            image-rendering: inherit;
         }
 
         /* Urutan Tumpukan Visual (Z-Index) */
         #layer-canvas { background-image: url('kanvasmb.png'); z-index: 1; }
         #layer-bottle { background-image: url('mbnacl.png'); z-index: 2; transition: background-image 0.1s; }
         
-        /* Animasi Tumpukan Zat (Tepat di h7-i8) -> z-index 3 */
+        /* Animasi Tumpukan Zat (Tepat di h7-i8) */
         #layer-salt {
             position: absolute;
-            left: 43.75%; top: 66.66%; /* Mulai dari h7 */
-            width: 12.5%; height: 22.22%; /* Mencakup lebar h-i dan tinggi 7-8 */
-            display: flex; justify-content: center; align-items: center; /* Tumbuh dari tengah */
+            left: 43.75%; top: 66.66%;
+            width: 12.5%; height: 22.22%;
+            display: flex; justify-content: center; align-items: center;
             z-index: 3;
+            image-rendering: pixelated;
         }
         .salt-pile {
             background-color: #ffffff;
-            border-radius: 50%; /* Membentuk oval/lingkaran */
+            border-radius: 50%;
             width: 0%; height: 0%;
             transition: all 0.3s ease;
         }
 
-        /* Layer UI Tombol/Key -> z-index 4 */
+        /* Layer UI Tombol/Key */
         #layer-key { background-image: url('keymb.png'); z-index: 4; pointer-events: none; }
 
-        /* Layar Digital Timbangan (h9-i9) -> z-index 5 */
+        /* Layar Digital Timbangan (h9-i9) */
         #scale-display {
             position: absolute;
             left: 43.75%; top: 88.88%;
@@ -76,12 +83,12 @@
             color: #5b7ea4; font-size: 3.5cqw; z-index: 5;
         }
 
-        /* Area Tombol Interaktif Transparan (Grid System) -> z-index 10 */
+        /* Area Tombol Interaktif Transparan (Grid System) */
         .btn-grid {
             position: absolute; background: transparent; border: none; cursor: pointer; z-index: 10;
         }
 
-        /* Lapisan Pop-Up -> z-index 20 */
+        /* Lapisan Pop-Up */
         .popup-layer { display: none; z-index: 20; }
         #popup-shelf { background-image: url('mbshelf.png'); }
         #popup-calc { background-image: url('popupmb.png'); }
@@ -89,7 +96,7 @@
         /* Teks dalam Pop-Up Perhitungan (Koordinat h4-k4, dll) */
         .calc-text {
             position: absolute; height: 11.11%; width: 25%;
-            display: flex; align-items: center; justify-content: center; text-align: center; /* Rata Tengah Sejati */
+            display: flex; align-items: center; justify-content: center; text-align: center;
             color: #000; font-size: 3cqw;
         }
         #calc-mass { left: 43.75%; top: 33.33%; } 
@@ -186,12 +193,10 @@
 
     // --- FUNGSI FORMAT ANGKA ---
     function formatMassa(angka) {
-        // Tepat 1 desimal. Mengganti titik dengan koma. 0 -> "0,0". 5.5 -> "5,5"
         return angka.toFixed(1).replace('.', ',');
     }
 
     function formatMol(angka) {
-        // Maksimal 3 desimal. Dikalikan 1000, dibulatkan, lalu dibagi 1000 untuk menghilangkan trailing nol.
         let rounded = Math.round(angka * 1000) / 1000;
         return String(rounded).replace('.', ',');
     }
@@ -208,10 +213,9 @@
     function updateVisual() {
         elTimbangan.innerText = formatMassa(massaTimbangan);
         
-        // Logika Visual Oval (Membesar dari tengah karena flex justify-center & align-center di CSS)
         let persentase = (massaTimbangan / maxKapasitas) * 100;
         elGaram.style.width = persentase + '%';
-        elGaram.style.height = (persentase * 0.5) + '%'; /* x0.5 untuk memastikan bentuknya oval */
+        elGaram.style.height = (persentase * 0.5) + '%'; 
     }
 
     // --- ACTIONS ---
@@ -240,7 +244,7 @@
 
     function autoMol(targetMol) {
         let targetMassa = targetMol * zatAktif.mr;
-        if (targetMassa > maxKapasitas) return; // Jika > 100 gram, abaikan.
+        if (targetMassa > maxKapasitas) return; 
         
         massaTimbangan = targetMassa;
         bukaWadahSementara();
