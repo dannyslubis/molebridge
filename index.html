@@ -72,7 +72,6 @@
         /* === SCENE 2: JUMLAH PARTIKEL === */
         #layer-canvas-partikel { background-image: url('kanvasmbp.png'); z-index: 1; }
         
-        /* OPTIMASI MEMORI: Ukuran pas 100%, background-position digeser via JS */
         #layer-lattice-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 2; cursor: grab; background-repeat: repeat, repeat;
@@ -80,7 +79,7 @@
         #layer-lattice-container:active { cursor: grabbing; }
 
         #layer-infokey { background-image: url('mbpinfokey.png'); z-index: 3; pointer-events: none; }
-        #layer-zat-label { z-index: 4; pointer-events: none; } /* Gambar dinamis mbp...png */
+        #layer-zat-label { z-index: 4; pointer-events: none; } 
         #layer-nav-partikel { background-image: url('mbkey2.png'); z-index: 4; pointer-events: none; }
 
         #text-mol-display {
@@ -92,7 +91,7 @@
         #popup-calc-partikel { background-image: url('popupmbp.png'); }
         .calc-text-partikel {
             position: absolute; display: flex; align-items: center; justify-content: center; 
-            color: #000; font-size: 3.5cqw; font-weight: normal; /* REVISI: Font Normal */
+            color: #000; font-size: 3.5cqw; font-weight: normal;
         }
         #calc-input-mol { left: 37.5%; top: 44.44%; width: 18.75%; height: 11.11%; } 
         #calc-result-partikel { left: 37.5%; top: 55.55%; width: 12.5%; height: 11.11%; }
@@ -166,6 +165,8 @@
         <div id="layer-nav-mol" class="layer"></div>
         <div id="scale-display">0,0</div>
 
+        <button class="btn-grid" style="left: 93.75%; top: 0%; width: 6.25%; height: 11.11%;" onclick="gotoScene('scene-title')"></button>
+
         <button class="btn-grid" style="left: 6.25%; top: 22.22%; width: 18.75%; height: 11.11%;" onclick="bukaRak()"></button>
         <button class="btn-grid" style="left: 6.25%; top: 77.77%; width: 6.25%; height: 11.11%;" onclick="tambahMassa(5)"></button>
         <button class="btn-grid" style="left: 12.5%; top: 77.77%; width: 6.25%; height: 11.11%;" onclick="tambahMassa(1)"></button>
@@ -235,6 +236,8 @@
         <div id="volume-display">0</div>
         <div id="alert-msg"></div>
 
+        <button class="btn-grid" style="left: 93.75%; top: 0%; width: 6.25%; height: 11.11%;" onclick="gotoScene('scene-title')"></button>
+
         <button id="btn-add-water" class="btn-grid" style="left: 6.25%; top: 33.33%; width: 18.75%; height: 11.11%;" onmousedown="mulaiTuangAir()" onmouseup="hentiTuangAir()" onmouseleave="hentiTuangAir()" ontouchstart="mulaiTuangAir()" ontouchend="hentiTuangAir()"></button>
         <button id="btn-add-substance" class="btn-grid" style="left: 6.25%; top: 55.55%; width: 18.75%; height: 11.11%; display: none;" onclick="eksekusiTambahZat()"></button>
         <button class="btn-grid" style="left: 6.25%; top: 77.77%; width: 18.75%; height: 11.11%;" onclick="resetSimulasiMolar()"></button>
@@ -284,6 +287,14 @@
 
     function getGlobalMol() { return massaTimbangan / zatAktif.mr; }
 
+    function tutupSemuaPopup() {
+        tutupRak();
+        tutupHitungMol();
+        tutupHitungPartikel();
+        tutupMolaritas();
+        tutupSolubility();
+    }
+
     // ==========================================
     // MANAJEMEN NAVIGASI SCENE
     // ==========================================
@@ -296,6 +307,9 @@
     }
 
     function gotoScene(sceneId) {
+        // Bersihkan popup yang mungkin masih terbuka
+        tutupSemuaPopup();
+
         // Matikan semua scene
         scenes.forEach(id => document.getElementById(id).style.display = 'none');
         
@@ -307,8 +321,9 @@
         }
         
         if (sceneId === 'scene-partikel') updateScenePartikel();
-        if (sceneId === 'scene-molaritas') resetSimulasiMolar(); // Refresh gelas kimia tiap masuk
+        if (sceneId === 'scene-molaritas') resetSimulasiMolar(); 
         
+        // Tampilkan scene yang dituju
         document.getElementById(sceneId).style.display = 'block';
     }
 
