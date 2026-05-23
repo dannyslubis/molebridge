@@ -23,21 +23,25 @@
             container-type: inline-size; overflow: hidden;
         }
 
-        .scene {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        }
-
+        .scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; }
+        
         .layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
             image-rendering: inherit;
         }
+        
         .btn-grid { position: absolute; background: transparent; border: none; cursor: pointer; z-index: 10; }
         .popup-layer { display: none; z-index: 20; }
         
         .calc-text {
             position: absolute; height: 11.11%; width: 25%; display: flex; align-items: center; justify-content: center; text-align: center; color: #000; font-size: 3cqw;
         }
+
+        /* === TITLE SCREEN === */
+        #scene-title { display: block; z-index: 50; transition: opacity 0.5s ease; background-color: #000; }
+        #layer-titlescreen { background-image: url('titlescreen.png'); }
+
 
         /* === SCENE 1: TIMBANGAN MOL === */
         #layer-canvas-mol { background-image: url('kanvasmb.png'); z-index: 1; }
@@ -47,9 +51,7 @@
             position: absolute; left: 43.75%; top: 66.66%; width: 12.5%; height: 22.22%;
             display: flex; justify-content: center; align-items: center; z-index: 3;
         }
-        .salt-pile {
-            background-color: #ffffff; border-radius: 50%; width: 0%; height: 0%; transition: all 0.3s ease;
-        }
+        .salt-pile { background-color: #ffffff; border-radius: 50%; width: 0%; height: 0%; transition: all 0.3s ease; }
 
         #layer-key-mol { background-image: url('keymb.png'); z-index: 4; pointer-events: none; }
         #layer-nav-mol { background-image: url('mbkey1.png'); z-index: 5; pointer-events: none; }
@@ -65,6 +67,35 @@
         #calc-mass-mol { left: 43.75%; top: 33.33%; } 
         #calc-mr-mol { left: 43.75%; top: 44.44%; }   
         #calc-result-mol { left: 43.75%; top: 55.55%; } 
+
+
+        /* === SCENE 2: JUMLAH PARTIKEL === */
+        #layer-canvas-partikel { background-image: url('kanvasmbp.png'); z-index: 1; }
+        
+        /* OPTIMASI MEMORI: Ukuran pas 100%, background-position digeser via JS */
+        #layer-lattice-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2; cursor: grab; background-repeat: repeat, repeat;
+        }
+        #layer-lattice-container:active { cursor: grabbing; }
+
+        #layer-infokey { background-image: url('mbpinfokey.png'); z-index: 3; pointer-events: none; }
+        #layer-zat-label { z-index: 4; pointer-events: none; } /* Gambar dinamis mbp...png */
+        #layer-nav-partikel { background-image: url('mbkey2.png'); z-index: 4; pointer-events: none; }
+
+        #text-mol-display {
+            position: absolute; left: 81.25%; top: 66.66%; width: 18.75%; height: 11.11%;
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 4cqw; z-index: 5; text-shadow: 2px 2px 0 #000;
+        }
+
+        #popup-calc-partikel { background-image: url('popupmbp.png'); }
+        .calc-text-partikel {
+            position: absolute; display: flex; align-items: center; justify-content: center; 
+            color: #000; font-size: 3.5cqw; font-weight: normal; /* REVISI: Font Normal */
+        }
+        #calc-input-mol { left: 37.5%; top: 44.44%; width: 18.75%; height: 11.11%; } 
+        #calc-result-partikel { left: 37.5%; top: 55.55%; width: 12.5%; height: 11.11%; }
 
 
         /* === SCENE 3: MOLARITAS === */
@@ -105,11 +136,7 @@
         #calc-liter-molar { left: 43.75%; top: 44.44%; }   
         #calc-result-molar { left: 43.75%; top: 55.55%; } 
 
-        #sim-status {
-            position: absolute; left: 31.25%; top: 11.11%; width: 25%; height: 11.11%;
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 4cqw; z-index: 21; text-shadow: 2px 2px 0 #000;
-        }
+        #sim-status { position: absolute; left: 31.25%; top: 11.11%; width: 25%; height: 11.11%; display: flex; align-items: center; justify-content: center; color: white; font-size: 4cqw; z-index: 21; text-shadow: 2px 2px 0 #000; }
         .part-sprite { position: absolute; height: 11.11%; width: 6.25%; background-size: contain; background-position: center; background-repeat: no-repeat; z-index: 21; }
         .part-text { position: absolute; height: 11.11%; width: 18.75%; display: flex; align-items: center; justify-content: flex-start; color: white; font-size: 3cqw; z-index: 21; padding-left: 1%; text-shadow: 1px 1px 0 #000; }
         #ui-sprite-1 { left: 12.5%; top: 88.88%; }
@@ -119,11 +146,17 @@
         #ui-text-air { position: absolute; left: 75%; top: 88.88%; width: 12.5%; height: 11.11%; display: flex; align-items: center; justify-content: center; color: white; font-size: 3cqw; z-index: 21; text-shadow: 1px 1px 0 #000; }
         #particle-canvas { position: absolute; left: 12.5%; top: 22.22%; width: 75%; height: 55.55%; z-index: 21; overflow: hidden; }
         .atom-node { position: absolute; background-size: contain; background-position: center; background-repeat: no-repeat; transform-origin: center center; }
+
     </style>
 </head>
 <body>
 
 <div id="game-container">
+
+    <div id="scene-title" class="scene">
+        <div id="layer-titlescreen" class="layer"></div>
+        <button class="btn-grid" style="left: 37.5%; top: 55.55%; width: 25%; height: 22.22%; z-index: 52;" onclick="mulaiSimulasi()"></button>
+    </div>
 
     <div id="scene-timbangan" class="scene">
         <div id="layer-canvas-mol" class="layer"></div>
@@ -143,8 +176,8 @@
         <button class="btn-grid" style="left: 87.5%; top: 77.77%; width: 6.25%; height: 11.11%;" onclick="autoMol(0.1)"></button>
         <button class="btn-grid" style="left: 75%; top: 88.88%; width: 18.75%; height: 11.11%;" onclick="bukaHitungMol()"></button>
 
-        <button class="btn-grid" style="left: 87.5%; top: 11.11%; width: 12.5%; height: 11.11%;" onclick="gotoPartikel()"></button>
-        <button class="btn-grid" style="left: 87.5%; top: 22.22%; width: 12.5%; height: 11.11%;" onclick="gotoMolaritas()"></button>
+        <button class="btn-grid" style="left: 87.5%; top: 11.11%; width: 12.5%; height: 11.11%;" onclick="gotoScene('scene-partikel')"></button>
+        <button class="btn-grid" style="left: 87.5%; top: 22.22%; width: 12.5%; height: 11.11%;" onclick="gotoScene('scene-molaritas')"></button>
 
         <div id="popup-shelf" class="layer popup-layer">
             <button class="btn-grid" style="left: 6.25%; top: 11.11%; width: 12.5%; height: 33.33%; z-index: 21;" onclick="pilihZat('s')"></button>
@@ -162,7 +195,30 @@
         </div>
     </div>
 
-    <div id="scene-molaritas" class="scene" style="display: none;">
+
+    <div id="scene-partikel" class="scene">
+        <div id="layer-canvas-partikel" class="layer"></div>
+        <div id="layer-lattice-container"></div>
+        <div id="layer-infokey" class="layer"></div>
+        <div id="layer-zat-label" class="layer"></div>
+        <div id="layer-nav-partikel" class="layer"></div>
+        <div id="text-mol-display">0 mol</div>
+
+        <button class="btn-grid" style="left: 93.75%; top: 0%; width: 6.25%; height: 11.11%;" onclick="gotoScene('scene-title')"></button>
+
+        <button class="btn-grid" style="left: 87.5%; top: 11.11%; width: 12.5%; height: 11.11%;" onclick="gotoScene('scene-timbangan')"></button>
+        <button class="btn-grid" style="left: 87.5%; top: 22.22%; width: 12.5%; height: 11.11%;" onclick="gotoScene('scene-molaritas')"></button>
+        <button class="btn-grid" style="left: 81.25%; top: 77.77%; width: 18.75%; height: 11.11%;" onclick="bukaHitungPartikel()"></button>
+
+        <div id="popup-calc-partikel" class="layer popup-layer">
+            <button class="btn-grid" style="left: 87.5%; top: 22.22%; width: 6.25%; height: 11.11%; z-index: 21;" onclick="tutupHitungPartikel()"></button>
+            <div id="calc-input-mol" class="calc-text-partikel">0 mol</div>
+            <div id="calc-result-partikel" class="calc-text-partikel">0</div>
+        </div>
+    </div>
+
+
+    <div id="scene-molaritas" class="scene">
         <div id="layer-canvas-molar" class="layer"></div>
         <div id="beaker-fluid-container">
             <div id="layer-liquid"></div>
@@ -185,7 +241,7 @@
         <button class="btn-grid" style="left: 75%; top: 33.33%; width: 18.75%; height: 11.11%;" onclick="bukaSolubility()"></button>
         <button class="btn-grid" style="left: 75%; top: 77.77%; width: 18.75%; height: 11.11%;" onclick="bukaMolaritas()"></button>
 
-        <button class="btn-grid" style="left: 87.5%; top: 11.11%; width: 12.5%; height: 11.11%;" onclick="gotoTimbangan()"></button>
+        <button class="btn-grid" style="left: 87.5%; top: 11.11%; width: 12.5%; height: 11.11%;" onclick="gotoScene('scene-timbangan')"></button>
 
         <div id="popup-molarity" class="layer popup-layer">
             <button class="btn-grid" style="left: 87.5%; top: 22.22%; width: 6.25%; height: 11.11%; z-index: 22;" onclick="tutupMolaritas()"></button>
@@ -209,7 +265,7 @@
 
 <script>
     // ==========================================
-    // MASTER DATABASE ZAT (Berlaku Global)
+    // DATABASE ZAT & STATE GLOBAL
     // ==========================================
     const databaseZat = {
         'nacl': { symbol: 'nacl', mr: 58, color: '#ffffff', larut: true, ion1: { sprite: 'mbpartna.png', text: 'Na+', charge: 1 }, ion2: { sprite: 'mbpartcl.png', text: 'Cl-', charge: -1 } },
@@ -219,19 +275,48 @@
         'fe':   { symbol: 'fe', mr: 56, color: '#95a5a6', larut: false, ion1: { sprite: 'mbpartfe.png', text: 'Besi', charge: 0 }, ion2: null }
     };
 
-    let zatAktif = databaseZat['nacl']; // Default State
+    let zatAktif = databaseZat['nacl'];
+    let massaTimbangan = 0;
 
-    // Format Number Utilities
+    function formatDesimal2(angka) { return angka === 0 ? "0" : angka.toFixed(2).replace('.', ','); }
     function formatMassa(angka) { return angka.toFixed(1).replace('.', ','); }
     function formatMol(angka) { return String(Math.round(angka * 1000) / 1000).replace('.', ','); }
 
-    // ==========================================
-    // LOGIKA SCENE 1: TIMBANGAN MOL
-    // ==========================================
-    let maxKapasitas = 100;
-    let massaTimbangan = 0;
-    let timerWadah = null;
+    function getGlobalMol() { return massaTimbangan / zatAktif.mr; }
 
+    // ==========================================
+    // MANAJEMEN NAVIGASI SCENE
+    // ==========================================
+    const scenes = ['scene-title', 'scene-timbangan', 'scene-partikel', 'scene-molaritas'];
+    
+    function mulaiSimulasi() {
+        let elTitle = document.getElementById('scene-title');
+        elTitle.style.opacity = '0';
+        setTimeout(() => { gotoScene('scene-timbangan'); elTitle.style.opacity = '1'; }, 500);
+    }
+
+    function gotoScene(sceneId) {
+        // Matikan semua scene
+        scenes.forEach(id => document.getElementById(id).style.display = 'none');
+        
+        // Aturan spesifik saat memasuki scene tertentu
+        if(sceneId === 'scene-molaritas' && massaTimbangan === 0) {
+            alert("Harap menimbang zat terlebih dahulu di Pulau Penentuan Mol!");
+            document.getElementById('scene-timbangan').style.display = 'block';
+            return;
+        }
+        
+        if (sceneId === 'scene-partikel') updateScenePartikel();
+        if (sceneId === 'scene-molaritas') resetSimulasiMolar(); // Refresh gelas kimia tiap masuk
+        
+        document.getElementById(sceneId).style.display = 'block';
+    }
+
+
+    // ==========================================
+    // LOGIKA SCENE 1: TIMBANGAN
+    // ==========================================
+    let maxKapasitas = 100; let timerWadah = null;
     const elTimbangan = document.getElementById('scale-display');
     const elWadahBotol = document.getElementById('layer-bottle-mol');
     const elGaramPile = document.getElementById('salt-pile');
@@ -247,13 +332,11 @@
     function updateVisualMol() {
         elTimbangan.innerText = formatMassa(massaTimbangan);
         let persentase = (massaTimbangan / maxKapasitas) * 100;
-        elGaramPile.style.width = persentase + '%';
-        elGaramPile.style.height = (persentase * 0.5) + '%'; 
+        elGaramPile.style.width = persentase + '%'; elGaramPile.style.height = (persentase * 0.5) + '%'; 
     }
 
     function pilihZat(simbol) {
-        zatAktif = databaseZat[simbol];
-        resetTimbangan(); 
+        zatAktif = databaseZat[simbol]; resetTimbangan(); 
         elWadahBotol.style.backgroundImage = `url('mb${zatAktif.symbol}.png')`;
         elGaramPile.style.backgroundColor = zatAktif.color;
         tutupRak();
@@ -261,69 +344,100 @@
 
     function tambahMassa(jumlah) {
         if (massaTimbangan + jumlah > maxKapasitas) return;
-        massaTimbangan += jumlah;
-        bukaWadahSementara(); updateVisualMol();
+        massaTimbangan += jumlah; bukaWadahSementara(); updateVisualMol();
     }
-
-    function resetTimbangan() {
-        massaTimbangan = 0;
-        bukaWadahSementara(); updateVisualMol();
-    }
-
+    function resetTimbangan() { massaTimbangan = 0; bukaWadahSementara(); updateVisualMol(); }
     function autoMol(targetMol) {
         let targetMassa = targetMol * zatAktif.mr;
         if (targetMassa > maxKapasitas) return; 
-        massaTimbangan = targetMassa;
-        bukaWadahSementara(); updateVisualMol();
+        massaTimbangan = targetMassa; bukaWadahSementara(); updateVisualMol();
     }
-
     function bukaHitungMol() {
         document.getElementById('calc-mass-mol').innerText = formatMassa(massaTimbangan) + ' g';
         document.getElementById('calc-mr-mol').innerText = zatAktif.mr + ' g/mol';
-        document.getElementById('calc-result-mol').innerText = formatMol(massaTimbangan / zatAktif.mr) + ' mol';
+        document.getElementById('calc-result-mol').innerText = formatMol(getGlobalMol()) + ' mol';
         popupCalcMol.style.display = 'block';
     }
     function tutupHitungMol() { popupCalcMol.style.display = 'none'; }
     function bukaRak() { popupShelf.style.display = 'block'; }
     function tutupRak() { popupShelf.style.display = 'none'; }
-
-    // Init Scene 1
-    elWadahBotol.style.backgroundImage = `url('mb${zatAktif.symbol}.png')`;
-    updateVisualMol();
+    elWadahBotol.style.backgroundImage = `url('mb${zatAktif.symbol}.png')`; updateVisualMol();
 
 
     // ==========================================
-    // NAVIGATION (SCENE MANAGEMENT)
+    // LOGIKA SCENE 2: JUMLAH PARTIKEL
     // ==========================================
-    function gotoPartikel() {
-        alert("Pulau Jumlah Partikel sedang dalam tahap pembangunan!");
-    }
+    const popCalcPartikel = document.getElementById('popup-calc-partikel');
+    const latticeContainer = document.getElementById('layer-lattice-container');
+    const layerZatLabel = document.getElementById('layer-zat-label');
+    
+    function updateScenePartikel() {
+        let mol = getGlobalMol();
+        let txtMol = mol === 0 ? "0 mol" : formatDesimal2(mol) + " mol";
+        document.getElementById('text-mol-display').innerText = txtMol;
+        
+        layerZatLabel.style.backgroundImage = `url('mbp${zatAktif.symbol}.png')`;
 
-    function gotoMolaritas() {
-        if(massaTimbangan === 0) {
-            alert("Harap menimbang zat terlebih dahulu sebelum melakukan pelarutan!");
-            return;
+        // Update Background Tekstur Dinamis (Optimasi Memori)
+        if (mol === 0) {
+            latticeContainer.style.backgroundImage = 'none';
+        } else {
+            if(zatAktif.ion2) {
+                latticeContainer.style.backgroundImage = `url('${zatAktif.ion1.sprite}'), url('${zatAktif.ion2.sprite}')`;
+                latticeContainer.style.backgroundSize = '6cqw 6cqw, 6cqw 6cqw';
+            } else {
+                latticeContainer.style.backgroundImage = `url('${zatAktif.ion1.sprite}')`;
+                latticeContainer.style.backgroundSize = '6cqw 6cqw';
+            }
         }
-        // Switch Scene
-        document.getElementById('scene-timbangan').style.display = 'none';
-        document.getElementById('scene-molaritas').style.display = 'block';
-        resetSimulasiMolar(); // Refresh gelas kimia setiap kali pindah
     }
 
-    function gotoTimbangan() {
-        document.getElementById('scene-molaritas').style.display = 'none';
-        document.getElementById('scene-timbangan').style.display = 'block';
+    function bukaHitungPartikel() {
+        let mol = getGlobalMol();
+        document.getElementById('calc-input-mol').innerText = mol === 0 ? "0 mol" : formatDesimal2(mol) + " mol";
+        let hasilKoefisien = mol * 6.022;
+        document.getElementById('calc-result-partikel').innerText = mol === 0 ? "0" : formatDesimal2(hasilKoefisien);
+        popCalcPartikel.style.display = 'block';
     }
+    function tutupHitungPartikel() { popCalcPartikel.style.display = 'none'; }
+
+    // Infinite Background Engine 
+    let isDragging = false; let startX, startY; let driftX = 0, driftY = 0; 
+    function renderInfinity() {
+        let mol = getGlobalMol();
+        if (!isDragging && mol > 0) { driftX += 0.3; driftY += 0.3; }
+        
+        if (zatAktif.ion2) {
+            latticeContainer.style.backgroundPosition = `${driftX}px ${driftY}px, calc(${driftX}px + 3cqw) calc(${driftY}px + 3cqw)`;
+        } else {
+            latticeContainer.style.backgroundPosition = `${driftX}px ${driftY}px`; // Atom tunggal tidak offset
+        }
+        requestAnimationFrame(renderInfinity);
+    }
+    renderInfinity(); 
+
+    latticeContainer.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX; startY = e.clientY; });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    window.addEventListener('mouseleave', () => { isDragging = false; });
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        driftX += e.clientX - startX; driftY += e.clientY - startY;
+        startX = e.clientX; startY = e.clientY;
+    });
+    latticeContainer.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX; startY = e.touches[0].clientY; });
+    window.addEventListener('touchend', () => { isDragging = false; });
+    window.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        driftX += e.touches[0].clientX - startX; driftY += e.touches[0].clientY - startY;
+        startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+    });
 
 
     // ==========================================
-    // LOGIKA SCENE 3: MOLARITAS (PELARUTAN)
+    // LOGIKA SCENE 3: MOLARITAS
     // ==========================================
-    let volumeAir_mL = 0; 
-    let zatTelahDituang = false;
-    let larutanTelahDiaduk = false;
-    let sistemSedangAnimasi = false;
-    let tuangAirInterval = null;
+    let volumeAir_mL = 0; let zatTelahDituang = false; let larutanTelahDiaduk = false;
+    let sistemSedangAnimasi = false; let tuangAirInterval = null;
 
     const elAlert = document.getElementById('alert-msg');
     const elAqua = document.getElementById('layer-aqua');
@@ -338,16 +452,8 @@
     const popMolarity = document.getElementById('popup-molarity');
     const popSolubility = document.getElementById('popup-solubility');
 
-    function tampilkanPeringatan(teks) {
-        elAlert.innerText = teks; elAlert.style.opacity = '1';
-        setTimeout(() => elAlert.style.opacity = '0', 2500);
-    }
-
-    function updateVisualBotolMiring() {
-        if (volumeAir_mL <= 500) elAqua.style.backgroundImage = "url('mbaqua11x.png')";
-        else if (volumeAir_mL > 500 && volumeAir_mL <= 1000) elAqua.style.backgroundImage = "url('mbaqua01x.png')";
-    }
-
+    function tampilkanPeringatan(teks) { elAlert.innerText = teks; elAlert.style.opacity = '1'; setTimeout(() => elAlert.style.opacity = '0', 2500); }
+    function updateVisualBotolMiring() { elAqua.style.backgroundImage = volumeAir_mL <= 500 ? "url('mbaqua11x.png')" : "url('mbaqua01x.png')"; }
     function updateVisualBotolDiam() {
         if (volumeAir_mL === 0 || volumeAir_mL < 500) elAqua.style.backgroundImage = "url('mbaqua11.png')";
         else if (volumeAir_mL === 500 || volumeAir_mL < 1000) elAqua.style.backgroundImage = "url('mbaqua01.png')"; 
@@ -356,109 +462,78 @@
 
     function prosesTuang100mL() {
         if (volumeAir_mL >= 1000) { hentiTuangAir(); return; }
-        volumeAir_mL += 100;
-        updateVisualBotolMiring();
+        volumeAir_mL += 100; updateVisualBotolMiring();
         elLiquid.style.height = (volumeAir_mL / 1000) * 100 + '%';
-        let liter = volumeAir_mL / 1000;
-        elVolumeDisplay.innerText = liter === 0 ? "0" : liter.toFixed(1).replace('.', ',');
-
-        if (volumeAir_mL >= 100 && !zatTelahDituang) {
-            elKeyAdd.style.display = 'block'; btnAddSubstance.style.display = 'block';
-        }
+        let liter = volumeAir_mL / 1000; elVolumeDisplay.innerText = liter === 0 ? "0" : liter.toFixed(1).replace('.', ',');
+        if (volumeAir_mL >= 100 && !zatTelahDituang) { elKeyAdd.style.display = 'block'; btnAddSubstance.style.display = 'block'; }
     }
 
     function mulaiTuangAir() {
         if (sistemSedangAnimasi || volumeAir_mL >= 1000) return;
-        elWaterStream.style.height = '33%'; 
-        prosesTuang100mL(); 
+        elWaterStream.style.height = '33%'; prosesTuang100mL(); 
         tuangAirInterval = setInterval(() => { prosesTuang100mL(); }, 350); 
     }
-
     function hentiTuangAir() { clearInterval(tuangAirInterval); elWaterStream.style.height = '0%'; updateVisualBotolDiam(); }
 
     function eksekusiTambahZat() {
         if (sistemSedangAnimasi || zatTelahDituang) return;
-        sistemSedangAnimasi = true;
-        elKeyAdd.style.display = 'none'; btnAddSubstance.style.display = 'none';
-        
-        elHandPour.style.display = 'block';
-        elPrecipitate.style.height = '12%'; 
-        elPrecipitate.style.backgroundColor = zatAktif.color; // Warna endapan dinamis dari DB
-
+        sistemSedangAnimasi = true; elKeyAdd.style.display = 'none'; btnAddSubstance.style.display = 'none';
+        elHandPour.style.display = 'block'; elPrecipitate.style.height = '12%'; elPrecipitate.style.backgroundColor = zatAktif.color;
         setTimeout(() => {
-            elHandPour.style.display = 'none';
-            elStir.style.backgroundImage = "url('mbgstirx.gif')";
+            elHandPour.style.display = 'none'; elStir.style.backgroundImage = "url('mbgstirx.gif')";
             setTimeout(() => {
-                elStir.style.backgroundImage = "url('mbgstir.png')";
-                zatTelahDituang = true; larutanTelahDiaduk = true;
-                if(zatAktif.larut) {
-                    elPrecipitate.style.height = '0%';
-                    elLiquid.style.backgroundColor = 'rgba(230, 245, 255, 0.5)'; 
-                }
+                elStir.style.backgroundImage = "url('mbgstir.png')"; zatTelahDituang = true; larutanTelahDiaduk = true;
+                if(zatAktif.larut) { elPrecipitate.style.height = '0%'; elLiquid.style.backgroundColor = 'rgba(230, 245, 255, 0.5)'; }
                 sistemSedangAnimasi = false;
             }, 2000);
-        }, 1000); // Tangan muncul 1 detik saja
+        }, 1000);
     }
 
     function resetSimulasiMolar() {
         if (sistemSedangAnimasi) return;
         volumeAir_mL = 0; zatTelahDituang = false; larutanTelahDiaduk = false;
-        elVolumeDisplay.innerText = "0";
-        elLiquid.style.height = '0%'; elLiquid.style.backgroundColor = 'rgba(180, 230, 255, 0.25)';
-        elPrecipitate.style.height = '0%';
-        updateVisualBotolDiam(); 
+        elVolumeDisplay.innerText = "0"; elLiquid.style.height = '0%'; elLiquid.style.backgroundColor = 'rgba(180, 230, 255, 0.25)';
+        elPrecipitate.style.height = '0%'; updateVisualBotolDiam(); 
         elKeyAdd.style.display = 'none'; btnAddSubstance.style.display = 'none';
         tutupMolaritas(); tutupSolubility();
     }
 
     function bukaMolaritas() {
         if (volumeAir_mL === 0) { tampilkanPeringatan("TAMBAHKAN AIR TERLEBIH DAHULU!"); return; }
-        
-        let globalMol = massaTimbangan / zatAktif.mr; // Hitung real-time dari timbangan
-        let volLiters = volumeAir_mL / 1000;
+        let globalMol = getGlobalMol(); let volLiters = volumeAir_mL / 1000;
         let hasilM = (larutanTelahDiaduk && zatAktif.larut) ? (globalMol / volLiters) : 0;
         
         document.getElementById('calc-mol-molar').innerText = formatMol(globalMol) + " mol";
         let txtL = volLiters === 1 ? "1,0" : volLiters.toFixed(1).replace('.', ',');
         document.getElementById('calc-liter-molar').innerText = txtL + " L";
         document.getElementById('calc-result-molar').innerText = formatMol(hasilM) + " M";
-        
         popMolarity.style.display = 'block';
     }
     function tutupMolaritas() { popMolarity.style.display = 'none'; }
 
 
     // === ENGINE FISIKA PARTIKEL (SOLUBILITY) ===
-    let particles = [];
-    let animFrameId = null;
-    const pCanvas = document.getElementById('particle-canvas');
+    let particles = []; let animFrameId = null; const pCanvas = document.getElementById('particle-canvas');
 
     function bukaSolubility() { 
         if (volumeAir_mL === 0) { tampilkanPeringatan("TAMBAHKAN AIR TERLEBIH DAHULU!"); return; }
-        popSolubility.style.display = 'block'; 
-        setupUISolubility(); mulaiEnginePartikel();
+        popSolubility.style.display = 'block'; setupUISolubility(); mulaiEnginePartikel();
     }
-    
     function tutupSolubility() { 
         popSolubility.style.display = 'none'; 
-        if (animFrameId) cancelAnimationFrame(animFrameId);
-        pCanvas.innerHTML = ''; particles = [];
+        if (animFrameId) cancelAnimationFrame(animFrameId); pCanvas.innerHTML = ''; particles = [];
     }
-
     function setupUISolubility() {
         const isLarut = larutanTelahDiaduk && zatAktif.larut;
         document.getElementById('sim-status').innerText = isLarut ? "Larut" : "Tidak larut";
         document.getElementById('ui-sprite-1').style.backgroundImage = `url('${zatAktif.ion1.sprite}')`;
         document.getElementById('ui-text-1').innerText = zatAktif.ion1.text;
-        
         if (zatAktif.ion2) {
             document.getElementById('ui-sprite-2').style.backgroundImage = `url('${zatAktif.ion2.sprite}')`;
             document.getElementById('ui-text-2').innerText = zatAktif.ion2.text;
-            document.getElementById('ui-sprite-2').style.display = 'block';
-            document.getElementById('ui-text-2').style.display = 'flex';
+            document.getElementById('ui-sprite-2').style.display = 'block'; document.getElementById('ui-text-2').style.display = 'flex';
         } else {
-            document.getElementById('ui-sprite-2').style.display = 'none';
-            document.getElementById('ui-text-2').style.display = 'none';
+            document.getElementById('ui-sprite-2').style.display = 'none'; document.getElementById('ui-text-2').style.display = 'none';
         }
     }
 
@@ -467,13 +542,10 @@
             this.type = type; this.x = x; this.y = y;
             this.vx = (Math.random() - 0.5) * 0.8; this.vy = (Math.random() - 0.5) * 0.8;
             this.size = size; this.charge = charge; this.angle = Math.random() * 360; 
-            this.element = document.createElement('div');
-            this.element.className = 'atom-node';
+            this.element = document.createElement('div'); this.element.className = 'atom-node';
             this.element.style.width = size + 'px'; this.element.style.height = size + 'px';
-            this.element.style.backgroundImage = `url('${sprite}')`;
-            pCanvas.appendChild(this.element);
+            this.element.style.backgroundImage = `url('${sprite}')`; pCanvas.appendChild(this.element);
         }
-
         update(canvasWidth, canvasHeight) {
             this.x += this.vx; this.y += this.vy;
             if (this.x <= 0) { this.x = 0; this.vx *= -1; }
@@ -507,36 +579,28 @@
         pCanvas.innerHTML = ''; particles = [];
         let cWidth = pCanvas.clientWidth; let cHeight = pCanvas.clientHeight;
         let isLarut = larutanTelahDiaduk && zatAktif.larut;
-        
-        let globalMol = massaTimbangan / zatAktif.mr;
-        let volLiters = volumeAir_mL / 1000;
+        let globalMol = getGlobalMol(); let volLiters = volumeAir_mL / 1000;
         let molaritas = isLarut ? (globalMol / volLiters) : 0;
         
-        let baseWaterCount = 45; 
-        let ionPairs = isLarut ? Math.min(Math.round(molaritas * 5), 25) : 0;
+        let baseWaterCount = 45; let ionPairs = isLarut ? Math.min(Math.round(molaritas * 5), 25) : 0;
 
-        for (let i = 0; i < baseWaterCount; i++) {
-            particles.push(new Partikel('water', Math.random() * (cWidth - 30), Math.random() * (cHeight - 30), 30, 'mbparthoh.png', 0));
-        }
+        for (let i = 0; i < baseWaterCount; i++) particles.push(new Partikel('water', Math.random() * (cWidth - 30), Math.random() * (cHeight - 30), 30, 'mbparthoh.png', 0));
 
         if (isLarut && ionPairs > 0) {
             for (let i = 0; i < ionPairs; i++) {
                 particles.push(new Partikel('ion1', Math.random() * cWidth, Math.random() * cHeight, 30, zatAktif.ion1.sprite, zatAktif.ion1.charge));
-                particles.push(new Partikel('ion2', Math.random() * cWidth, Math.random() * cHeight, 30, zatAktif.ion2.sprite, zatAktif.ion2.charge));
+                if(zatAktif.ion2) particles.push(new Partikel('ion2', Math.random() * cWidth, Math.random() * cHeight, 30, zatAktif.ion2.sprite, zatAktif.ion2.charge));
             }
         } else if (!larutanTelahDiaduk && zatTelahDituang) {
-            let startX = cWidth / 2 - 60; let startY = cHeight - 90;
-            let rows = 3; let cols = 4; let spacing = 28;
+            let startX = cWidth / 2 - 60; let startY = cHeight - 90; let rows = 3; let cols = 4; let spacing = 28;
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
                     let px = startX + (c * spacing); let py = startY + (r * spacing);
                     if (zatAktif.ion2) {
                         let sprite = (r + c) % 2 === 0 ? zatAktif.ion1.sprite : zatAktif.ion2.sprite;
-                        let p = new Partikel('solid', px, py, 30, sprite, 0);
-                        p.vx = 0; p.vy = 0; particles.push(p);
+                        let p = new Partikel('solid', px, py, 30, sprite, 0); p.vx = 0; p.vy = 0; particles.push(p);
                     } else {
-                        let p = new Partikel('solid', px, py, 30, zatAktif.ion1.sprite, 0);
-                        p.vx = 0; p.vy = 0; particles.push(p);
+                        let p = new Partikel('solid', px, py, 30, zatAktif.ion1.sprite, 0); p.vx = 0; p.vy = 0; particles.push(p);
                     }
                 }
             }
@@ -556,8 +620,7 @@
                     let overlap = minDist - dist; let nx = dx / dist; let ny = dy / dist;
                     if (p1.type !== 'solid') { p1.x += nx * (overlap / 2); p1.y += ny * (overlap / 2); }
                     if (p2.type !== 'solid') { p2.x -= nx * (overlap / 2); p2.y -= ny * (overlap / 2); }
-                    let tempVx = p1.vx; let tempVy = p1.vy;
-                    p1.vx = p2.vx; p1.vy = p2.vy; p2.vx = tempVx; p2.vy = tempVy;
+                    let tempVx = p1.vx; let tempVy = p1.vy; p1.vx = p2.vx; p1.vy = p2.vy; p2.vx = tempVx; p2.vy = tempVy;
                 }
             }
         }
