@@ -163,7 +163,7 @@
         <div id="layer-salt-mol"><div id="salt-pile" class="salt-pile"></div></div>
         <div id="layer-key-mol" class="layer"></div>
         <div id="layer-nav-mol" class="layer"></div>
-        <div id="scale-display">0,0</div>
+        <div id="scale-display">0,000</div>
 
         <button class="btn-grid" style="left: 93.75%; top: 0%; width: 6.25%; height: 11.11%;" onclick="gotoScene('scene-title')"></button>
 
@@ -190,9 +190,9 @@
         </div>
         <div id="popup-calc-mol" class="layer popup-layer">
             <button class="btn-grid" style="left: 87.5%; top: 22.22%; width: 6.25%; height: 11.11%; z-index: 21;" onclick="tutupHitungMol()"></button>
-            <div id="calc-mass-mol" class="calc-text">0,0 g</div>
-            <div id="calc-mr-mol" class="calc-text">0 g/mol</div>
-            <div id="calc-result-mol" class="calc-text">0,0 mol</div>
+            <div id="calc-mass-mol" class="calc-text">0,000 g</div>
+            <div id="calc-mr-mol" class="calc-text">0,000 g/mol</div>
+            <div id="calc-result-mol" class="calc-text">0,000 mol</div>
         </div>
     </div>
 
@@ -203,7 +203,7 @@
         <div id="layer-infokey" class="layer"></div>
         <div id="layer-zat-label" class="layer"></div>
         <div id="layer-nav-partikel" class="layer"></div>
-        <div id="text-mol-display">0 mol</div>
+        <div id="text-mol-display">0,000 mol</div>
 
         <button class="btn-grid" style="left: 93.75%; top: 0%; width: 6.25%; height: 11.11%;" onclick="gotoScene('scene-title')"></button>
 
@@ -213,8 +213,8 @@
 
         <div id="popup-calc-partikel" class="layer popup-layer">
             <button class="btn-grid" style="left: 87.5%; top: 22.22%; width: 6.25%; height: 11.11%; z-index: 21;" onclick="tutupHitungPartikel()"></button>
-            <div id="calc-input-mol" class="calc-text-partikel">0 mol</div>
-            <div id="calc-result-partikel" class="calc-text-partikel">0</div>
+            <div id="calc-input-mol" class="calc-text-partikel">0,000 mol</div>
+            <div id="calc-result-partikel" class="calc-text-partikel">0,000</div>
         </div>
     </div>
 
@@ -233,7 +233,7 @@
         <div id="layer-key-molar" class="layer"></div>
         <div id="layer-key-add" class="layer"></div>
         <div id="layer-nav-molar" class="layer"></div>
-        <div id="volume-display">0</div>
+        <div id="volume-display">0,000</div>
         <div id="alert-msg"></div>
 
         <button class="btn-grid" style="left: 93.75%; top: 0%; width: 6.25%; height: 11.11%;" onclick="gotoScene('scene-title')"></button>
@@ -248,9 +248,9 @@
 
         <div id="popup-molarity" class="layer popup-layer">
             <button class="btn-grid" style="left: 87.5%; top: 22.22%; width: 6.25%; height: 11.11%; z-index: 22;" onclick="tutupMolaritas()"></button>
-            <div id="calc-mol-molar" class="calc-text">0,0 mol</div>
-            <div id="calc-liter-molar" class="calc-text">0,0 L</div>
-            <div id="calc-result-molar" class="calc-text">0,0 M</div>
+            <div id="calc-mol-molar" class="calc-text">0,000 mol</div>
+            <div id="calc-liter-molar" class="calc-text">0,000 L</div>
+            <div id="calc-result-molar" class="calc-text">0,000 M</div>
         </div>
         <div id="popup-solubility" class="layer popup-layer">
             <button class="btn-grid" style="left: 93.75%; top: 0%; width: 6.25%; height: 11.11%; z-index: 22;" onclick="tutupSolubility()"></button>
@@ -281,9 +281,10 @@
     let zatAktif = databaseZat['nacl'];
     let massaTimbangan = 0;
 
-    function formatDesimal2(angka) { return angka === 0 ? "0" : angka.toFixed(2).replace('.', ','); }
-    function formatMassa(angka) { return angka.toFixed(1).replace('.', ','); }
-    function formatMol(angka) { return String(Math.round(angka * 1000) / 1000).replace('.', ','); }
+    // FUNGSI FORMAT BARU: Selalu 3 angka di belakang koma (0,000)
+    function format3Desimal(angka) { 
+        return angka.toFixed(3).replace('.', ','); 
+    }
 
     function getGlobalMol() { return massaTimbangan / zatAktif.mr; }
 
@@ -307,13 +308,9 @@
     }
 
     function gotoScene(sceneId) {
-        // Bersihkan popup yang mungkin masih terbuka
         tutupSemuaPopup();
-
-        // Matikan semua scene
         scenes.forEach(id => document.getElementById(id).style.display = 'none');
         
-        // Aturan spesifik saat memasuki scene tertentu
         if(sceneId === 'scene-molaritas' && massaTimbangan === 0) {
             alert("Harap menimbang zat terlebih dahulu di Pulau Penentuan Mol!");
             document.getElementById('scene-timbangan').style.display = 'block';
@@ -323,7 +320,6 @@
         if (sceneId === 'scene-partikel') updateScenePartikel();
         if (sceneId === 'scene-molaritas') resetSimulasiMolar(); 
         
-        // Tampilkan scene yang dituju
         document.getElementById(sceneId).style.display = 'block';
     }
 
@@ -345,7 +341,7 @@
     }
 
     function updateVisualMol() {
-        elTimbangan.innerText = formatMassa(massaTimbangan);
+        elTimbangan.innerText = format3Desimal(massaTimbangan);
         let persentase = (massaTimbangan / maxKapasitas) * 100;
         elGaramPile.style.width = persentase + '%'; elGaramPile.style.height = (persentase * 0.5) + '%'; 
     }
@@ -368,9 +364,9 @@
         massaTimbangan = targetMassa; bukaWadahSementara(); updateVisualMol();
     }
     function bukaHitungMol() {
-        document.getElementById('calc-mass-mol').innerText = formatMassa(massaTimbangan) + ' g';
-        document.getElementById('calc-mr-mol').innerText = zatAktif.mr + ' g/mol';
-        document.getElementById('calc-result-mol').innerText = formatMol(getGlobalMol()) + ' mol';
+        document.getElementById('calc-mass-mol').innerText = format3Desimal(massaTimbangan) + ' g';
+        document.getElementById('calc-mr-mol').innerText = format3Desimal(zatAktif.mr) + ' g/mol';
+        document.getElementById('calc-result-mol').innerText = format3Desimal(getGlobalMol()) + ' mol';
         popupCalcMol.style.display = 'block';
     }
     function tutupHitungMol() { popupCalcMol.style.display = 'none'; }
@@ -388,12 +384,10 @@
     
     function updateScenePartikel() {
         let mol = getGlobalMol();
-        let txtMol = mol === 0 ? "0 mol" : formatDesimal2(mol) + " mol";
-        document.getElementById('text-mol-display').innerText = txtMol;
+        document.getElementById('text-mol-display').innerText = format3Desimal(mol) + " mol";
         
         layerZatLabel.style.backgroundImage = `url('mbp${zatAktif.symbol}.png')`;
 
-        // Update Background Tekstur Dinamis (Optimasi Memori)
         if (mol === 0) {
             latticeContainer.style.backgroundImage = 'none';
         } else {
@@ -409,14 +403,13 @@
 
     function bukaHitungPartikel() {
         let mol = getGlobalMol();
-        document.getElementById('calc-input-mol').innerText = mol === 0 ? "0 mol" : formatDesimal2(mol) + " mol";
+        document.getElementById('calc-input-mol').innerText = format3Desimal(mol) + " mol";
         let hasilKoefisien = mol * 6.022;
-        document.getElementById('calc-result-partikel').innerText = mol === 0 ? "0" : formatDesimal2(hasilKoefisien);
+        document.getElementById('calc-result-partikel').innerText = format3Desimal(hasilKoefisien);
         popCalcPartikel.style.display = 'block';
     }
     function tutupHitungPartikel() { popCalcPartikel.style.display = 'none'; }
 
-    // Infinite Background Engine 
     let isDragging = false; let startX, startY; let driftX = 0, driftY = 0; 
     function renderInfinity() {
         let mol = getGlobalMol();
@@ -425,7 +418,7 @@
         if (zatAktif.ion2) {
             latticeContainer.style.backgroundPosition = `${driftX}px ${driftY}px, calc(${driftX}px + 3cqw) calc(${driftY}px + 3cqw)`;
         } else {
-            latticeContainer.style.backgroundPosition = `${driftX}px ${driftY}px`; // Atom tunggal tidak offset
+            latticeContainer.style.backgroundPosition = `${driftX}px ${driftY}px`;
         }
         requestAnimationFrame(renderInfinity);
     }
@@ -479,7 +472,7 @@
         if (volumeAir_mL >= 1000) { hentiTuangAir(); return; }
         volumeAir_mL += 100; updateVisualBotolMiring();
         elLiquid.style.height = (volumeAir_mL / 1000) * 100 + '%';
-        let liter = volumeAir_mL / 1000; elVolumeDisplay.innerText = liter === 0 ? "0" : liter.toFixed(1).replace('.', ',');
+        let liter = volumeAir_mL / 1000; elVolumeDisplay.innerText = format3Desimal(liter);
         if (volumeAir_mL >= 100 && !zatTelahDituang) { elKeyAdd.style.display = 'block'; btnAddSubstance.style.display = 'block'; }
     }
 
@@ -507,7 +500,7 @@
     function resetSimulasiMolar() {
         if (sistemSedangAnimasi) return;
         volumeAir_mL = 0; zatTelahDituang = false; larutanTelahDiaduk = false;
-        elVolumeDisplay.innerText = "0"; elLiquid.style.height = '0%'; elLiquid.style.backgroundColor = 'rgba(180, 230, 255, 0.25)';
+        elVolumeDisplay.innerText = "0,000"; elLiquid.style.height = '0%'; elLiquid.style.backgroundColor = 'rgba(180, 230, 255, 0.25)';
         elPrecipitate.style.height = '0%'; updateVisualBotolDiam(); 
         elKeyAdd.style.display = 'none'; btnAddSubstance.style.display = 'none';
         tutupMolaritas(); tutupSolubility();
@@ -518,10 +511,9 @@
         let globalMol = getGlobalMol(); let volLiters = volumeAir_mL / 1000;
         let hasilM = (larutanTelahDiaduk && zatAktif.larut) ? (globalMol / volLiters) : 0;
         
-        document.getElementById('calc-mol-molar').innerText = formatMol(globalMol) + " mol";
-        let txtL = volLiters === 1 ? "1,0" : volLiters.toFixed(1).replace('.', ',');
-        document.getElementById('calc-liter-molar').innerText = txtL + " L";
-        document.getElementById('calc-result-molar').innerText = formatMol(hasilM) + " M";
+        document.getElementById('calc-mol-molar').innerText = format3Desimal(globalMol) + " mol";
+        document.getElementById('calc-liter-molar').innerText = format3Desimal(volLiters) + " L";
+        document.getElementById('calc-result-molar').innerText = format3Desimal(hasilM) + " M";
         popMolarity.style.display = 'block';
     }
     function tutupMolaritas() { popMolarity.style.display = 'none'; }
